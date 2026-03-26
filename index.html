@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click & Fun – Lưu Giữ Kỷ Niệm</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --pink: #F72585;
+      --pink-light: #FF8DC7;
+      --pink-soft: #FFD6EC;
+      --pink-pale: #FFF0F8;
+      --brown: #5C2D0A;
+      --white: #FFFFFF;
+      --cream: #FFF9FC;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .4;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 60px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(18px);
+      border-bottom: 1.5px solid var(--pink-soft);
+    }
+    .nav-logo {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.6rem;
+      color: var(--pink);
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+    .nav-logo span { color: var(--brown); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; font-weight: 700;
+      color: var(--brown); font-size: .95rem;
+      letter-spacing: .5px; transition: color .25s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -3px; left: 0;
+      width: 0; height: 2px; background: var(--pink);
+      transition: width .3s;
+    }
+    .nav-links a:hover { color: var(--pink); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-btn {
+      background: var(--pink); color: #fff;
+      border: none; border-radius: 50px;
+      padding: 10px 28px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: .95rem;
+      cursor: pointer; transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 15px rgba(247,37,133,.35);
+    }
+    .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(247,37,133,.45); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      padding: 120px 60px 80px;
+    }
+    /* floating blobs */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: .35; pointer-events: none;
+    }
+    .blob-1 { width: 520px; height: 520px; background: var(--pink-soft); top: -100px; left: -150px; animation: drift 8s ease-in-out infinite alternate; }
+    .blob-2 { width: 380px; height: 380px; background: var(--pink-light); bottom: -80px; right: -100px; animation: drift 10s ease-in-out infinite alternate-reverse; }
+    .blob-3 { width: 240px; height: 240px; background: #FFB3D9; top: 40%; left: 45%; animation: drift 6s ease-in-out infinite alternate; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px, 25px) scale(1.08); } }
+
+    /* floating hearts */
+    .hearts-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .h { position: absolute; opacity: 0; animation: floatUp linear infinite; }
+    .h::before {
+      content: '♥'; font-size: 1.4rem; color: var(--pink); opacity: .18;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: .6; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    .hero-content { position: relative; z-index: 2; text-align: center; max-width: 780px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--pink-soft); border: 1.5px solid var(--pink-light);
+      border-radius: 50px; padding: 6px 20px;
+      font-size: .85rem; font-weight: 700; color: var(--pink);
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp .8s ease both;
+    }
+    .hero-badge span { font-size: 1rem; }
+    .hero-title {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: var(--pink);
+      line-height: 1.1;
+      margin-bottom: 16px;
+      animation: fadeUp .9s .1s ease both;
+      text-shadow: 3px 6px 20px rgba(247,37,133,.18);
+    }
+    .hero-title .amp { color: var(--brown); font-size: .75em; }
+    .hero-sub {
+      font-size: 1.15rem; font-weight: 600; color: var(--brown);
+      opacity: .75; letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp 1s .2s ease both;
+    }
+    .hero-desc {
+      font-size: 1.1rem; line-height: 1.8;
+      color: var(--brown); opacity: .8;
+      max-width: 560px; margin: 0 auto 40px;
+      animation: fadeUp 1s .3s ease both;
+    }
+    .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; animation: fadeUp 1s .4s ease both; }
+    .btn-primary {
+      background: var(--pink); color: #fff;
+      padding: 16px 44px; border-radius: 50px;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.05rem;
+      text-decoration: none; display: inline-block;
+      box-shadow: 0 6px 28px rgba(247,37,133,.4);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(247,37,133,.5); }
+    .btn-outline {
+      background: transparent; color: var(--pink);
+      padding: 15px 44px; border-radius: 50px;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.05rem;
+      text-decoration: none; display: inline-block;
+      border: 2.5px solid var(--pink);
+      transition: background .25s, color .25s, transform .25s;
+    }
+    .btn-outline:hover { background: var(--pink); color: #fff; transform: translateY(-3px); }
+
+    /* camera SVG hero */
+    .hero-camera {
+      margin-top: 60px;
+      animation: fadeUp 1s .5s ease both;
+    }
+    .hero-camera svg { width: min(420px, 90vw); drop-shadow: 0 20px 60px rgba(247,37,133,.2); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 60px; }
+    .section-label {
+      display: inline-block;
+      font-size: .8rem; font-weight: 800; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--pink);
+      background: var(--pink-soft); border-radius: 50px;
+      padding: 5px 18px; margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--brown); line-height: 1.2; margin-bottom: 16px;
+    }
+    .section-title em { color: var(--pink); font-style: normal; }
+    .section-desc { font-size: 1.05rem; line-height: 1.8; color: var(--brown); opacity: .75; max-width: 560px; }
+
+    /* ── WHY US ── */
+    #why { background: var(--white); }
+    .why-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 28px; margin-top: 60px;
+    }
+    .why-card {
+      background: var(--pink-pale);
+      border: 1.5px solid var(--pink-soft);
+      border-radius: 24px; padding: 36px 28px;
+      text-align: center; transition: transform .3s, box-shadow .3s;
+      position: relative; overflow: hidden;
+    }
+    .why-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(247,37,133,.06), transparent);
+      opacity: 0; transition: opacity .3s;
+    }
+    .why-card:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(247,37,133,.15); }
+    .why-card:hover::before { opacity: 1; }
+    .why-icon { font-size: 2.8rem; margin-bottom: 18px; display: block; }
+    .why-card h3 { font-weight: 800; font-size: 1.1rem; color: var(--brown); margin-bottom: 10px; }
+    .why-card p { font-size: .9rem; line-height: 1.7; color: var(--brown); opacity: .7; }
+
+    /* ── PACKAGES ── */
+    #packages { background: var(--cream); }
+    .pkg-header { text-align: center; }
+    .pkg-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 28px; margin-top: 60px; align-items: start;
+    }
+    .pkg-card {
+      border-radius: 28px; padding: 40px 32px;
+      border: 2px solid var(--pink-soft);
+      background: var(--white);
+      transition: transform .3s, box-shadow .3s;
+      position: relative;
+    }
+    .pkg-card.popular {
+      background: var(--pink); border-color: var(--pink);
+      color: #fff; transform: scale(1.04);
+      box-shadow: 0 20px 60px rgba(247,37,133,.4);
+    }
+    .pkg-card.popular .pkg-price,
+    .pkg-card.popular .pkg-name,
+    .pkg-card.popular li { color: #fff; }
+    .pkg-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: var(--brown); color: #fff;
+      font-size: .75rem; font-weight: 800; letter-spacing: 2px;
+      text-transform: uppercase; border-radius: 50px; padding: 4px 18px;
+    }
+    .pkg-name { font-family: 'Pacifico', cursive; font-size: 1.5rem; color: var(--pink); margin-bottom: 8px; }
+    .pkg-price { font-size: 2.4rem; font-weight: 900; color: var(--brown); margin-bottom: 24px; }
+    .pkg-price span { font-size: 1rem; font-weight: 600; opacity: .7; }
+    .pkg-card ul { list-style: none; margin-bottom: 32px; }
+    .pkg-card li { padding: 8px 0; font-weight: 600; font-size: .95rem; border-bottom: 1px solid rgba(247,37,133,.1); }
+    .pkg-card li::before { content: '✦ '; color: var(--pink-light); }
+    .pkg-card.popular li::before { color: rgba(255,255,255,.7); }
+    .pkg-btn {
+      display: block; text-align: center; text-decoration: none;
+      padding: 13px; border-radius: 50px;
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      border: 2px solid var(--pink); color: var(--pink);
+      transition: background .25s, color .25s;
+    }
+    .pkg-btn:hover { background: var(--pink); color: #fff; }
+    .pkg-card.popular .pkg-btn {
+      background: #fff; color: var(--pink); border-color: #fff;
+    }
+    .pkg-card.popular .pkg-btn:hover { background: var(--brown); color: #fff; border-color: var(--brown); }
+
+    /* ── GALLERY ── */
+    #gallery { background: var(--white); }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 220px);
+      gap: 16px; margin-top: 60px;
+    }
+    .g-item {
+      border-radius: 20px; overflow: hidden; position: relative;
+      background: var(--pink-soft);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .35s;
+    }
+    .g-item:hover { transform: scale(1.03); z-index: 2; }
+    .g-item:nth-child(1) { grid-column: span 2; }
+    .g-item:nth-child(4) { grid-column: span 2; }
+    .g-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px;
+    }
+    .g-placeholder .g-icon { font-size: 3rem; opacity: .4; }
+    .g-placeholder p { font-size: .85rem; font-weight: 700; color: var(--pink); opacity: .6; }
+    .g-overlay {
+      position: absolute; inset: 0; background: rgba(247,37,133,.15);
+      opacity: 0; transition: opacity .3s;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--pink); font-size: 2rem;
+    }
+    .g-item:hover .g-overlay { opacity: 1; }
+    /* pastel gradient fills */
+    .g-item:nth-child(1) { background: linear-gradient(135deg, #FFD6EC, #FFB3D9); }
+    .g-item:nth-child(2) { background: linear-gradient(135deg, #FFC2E0, #FF8DC7); }
+    .g-item:nth-child(3) { background: linear-gradient(135deg, #FFE8F5, #FFD6EC); }
+    .g-item:nth-child(4) { background: linear-gradient(135deg, #FF8DC7, #F72585); }
+    .g-item:nth-child(5) { background: linear-gradient(135deg, #FFD6EC, #FFC2E0); }
+    .g-item:nth-child(6) { background: linear-gradient(135deg, #FFB3D9, #FF8DC7); }
+
+    /* ── STEPS ── */
+    #steps { background: var(--cream); }
+    .steps-row {
+      display: flex; gap: 0; margin-top: 60px; position: relative;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .steps-row::before {
+      content: ''; position: absolute; top: 42px; left: 10%; right: 10%;
+      height: 2px; background: repeating-linear-gradient(90deg, var(--pink-light) 0, var(--pink-light) 14px, transparent 14px, transparent 28px);
+    }
+    .step {
+      flex: 1; min-width: 160px; max-width: 220px;
+      text-align: center; position: relative; padding: 0 16px;
+    }
+    .step-num {
+      width: 84px; height: 84px; border-radius: 50%;
+      background: var(--white); border: 3px solid var(--pink);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Pacifico', cursive; font-size: 1.6rem;
+      color: var(--pink); margin: 0 auto 20px;
+      box-shadow: 0 6px 22px rgba(247,37,133,.2);
+      position: relative; z-index: 1;
+    }
+    .step h3 { font-weight: 800; color: var(--brown); margin-bottom: 8px; }
+    .step p { font-size: .9rem; color: var(--brown); opacity: .7; line-height: 1.6; }
+
+    /* ── TESTIMONIALS ── */
+    #reviews { background: var(--white); }
+    .review-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px; margin-top: 60px;
+    }
+    .review-card {
+      background: var(--pink-pale); border: 1.5px solid var(--pink-soft);
+      border-radius: 24px; padding: 32px 28px;
+      transition: transform .3s;
+    }
+    .review-card:hover { transform: translateY(-6px); }
+    .stars { color: var(--pink); font-size: 1.1rem; margin-bottom: 14px; letter-spacing: 3px; }
+    .review-text { font-size: .97rem; line-height: 1.75; color: var(--brown); opacity: .8; margin-bottom: 20px; font-style: italic; }
+    .reviewer { display: flex; align-items: center; gap: 14px; }
+    .reviewer-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--pink-soft); border: 2px solid var(--pink-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .reviewer-name { font-weight: 800; color: var(--brown); font-size: .95rem; }
+    .reviewer-role { font-size: .8rem; color: var(--pink); font-weight: 600; }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--pink); }
+    .contact-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+    .contact-inner .section-title { color: #fff; }
+    .contact-inner .section-desc { color: rgba(255,255,255,.8); margin: 0 auto 40px; }
+    .contact-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .contact-chip {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.15); backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255,255,255,.3); border-radius: 50px;
+      padding: 14px 28px; color: #fff; font-weight: 700;
+      text-decoration: none; font-size: 1rem;
+      transition: background .25s, transform .25s;
+    }
+    .contact-chip:hover { background: rgba(255,255,255,.25); transform: translateY(-3px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--brown); color: rgba(255,255,255,.7);
+      text-align: center; padding: 40px 60px;
+    }
+    footer .footer-logo {
+      font-family: 'Pacifico', cursive; font-size: 1.8rem;
+      color: var(--pink-light); margin-bottom: 12px; display: block;
+    }
+    footer p { font-size: .9rem; line-height: 1.7; }
+    footer a { color: var(--pink-light); text-decoration: none; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--cream); }
+    ::-webkit-scrollbar-thumb { background: var(--pink-light); border-radius: 10px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      section { padding: 70px 24px; }
+      .hero { padding: 110px 24px 60px; }
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
+      }
+      .g-item:nth-child(1), .g-item:nth-child(4) { grid-column: span 1; }
+      .steps-row::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Click <span>&</span> Fun</a>
+  <ul class="nav-links">
+    <li><a href="#why">Về Chúng Tôi</a></li>
+    <li><a href="#packages">Gói Chụp</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#reviews">Đánh Giá</a></li>
+    <li><a href="#contact">Liên Hệ</a></li>
+  </ul>
+  <button class="nav-btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Đặt Lịch Ngay 📸</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hearts-bg" id="hearts"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge"><span>📸</span> Photobooth – Kỷ Niệm Không Phai</div>
+    <h1 class="hero-title">Click <span class="amp">&</span> Fun</h1>
+    <p class="hero-sub">Lưu Giữ Kỷ Niệm</p>
+    <p class="hero-desc">
+      Nơi mỗi khoảnh khắc trở thành một bức ảnh đẹp đáng nhớ. Chụp ảnh photobooth vui nhộn, sáng tạo cùng bạn bè và người thân! 💕
+    </p>
+    <div class="hero-cta">
+      <a href="#packages" class="btn-primary">Xem Gói Chụp ✨</a>
+      <a href="#gallery" class="btn-outline">Xem Gallery</a>
+    </div>
+
+    <!-- inline camera logo recreation -->
+    <div class="hero-camera">
+      <svg viewBox="0 0 440 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- camera body -->
+        <rect x="40" y="90" width="360" height="230" rx="30" ry="30" stroke="#5C2D0A" stroke-width="9" fill="none"/>
+        <!-- shutter bump -->
+        <rect x="155" y="60" width="90" height="38" rx="16" stroke="#5C2D0A" stroke-width="9" fill="none"/>
+        <!-- viewfinder -->
+        <rect x="72" y="100" width="32" height="24" rx="8" stroke="#5C2D0A" stroke-width="7" fill="none"/>
+        <!-- pink heart fill -->
+        <path d="M220 165 C220 165 185 135 162 148 C139 161 139 195 162 215 L220 270 L278 215 C301 195 301 161 278 148 C255 135 220 165 220 165Z" fill="#F72585" opacity="0.85"/>
+        <!-- heart line drawing decorative -->
+        <path d="M200 178 C200 178 186 168 174 176 C162 184 164 203 178 216 L220 258 L262 216 C276 203 278 184 266 176 C254 168 240 180 220 200 C210 190 200 178 200 178Z" stroke="#5C2D0A" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- drip 1 -->
+        <ellipse cx="213" cy="170" rx="6" ry="9" fill="#5C2D0A"/>
+        <!-- drip 2 -->
+        <ellipse cx="231" cy="183" rx="5" ry="8" fill="#5C2D0A"/>
+        <!-- sparkles -->
+        <text x="60" y="78" font-size="22" fill="#F72585" opacity=".5">✦</text>
+        <text x="360" y="78" font-size="16" fill="#F72585" opacity=".4">✦</text>
+        <text x="395" y="270" font-size="12" fill="#FF8DC7" opacity=".6">✦</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+  <div style="text-align:center; margin-bottom:0">
+    <span class="section-label">Tại Sao Chọn Chúng Tôi</span>
+    <h2 class="section-title" style="text-align:center">Trải nghiệm <em>đáng yêu</em><br>không nơi nào có</h2>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <span class="why-icon">🎀</span>
+      <h3>Trang Trí Cực Xinh</h3>
+      <p>Không gian được decor theo từng chủ đề đặc biệt, mỗi tháng đều có theme mới cực kỳ trendy.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">📷</span>
+      <h3>Máy Ảnh Chất Lượng Cao</h3>
+      <p>Sử dụng máy ảnh và ánh sáng chuyên nghiệp đảm bảo mỗi tấm ảnh đều lung linh và rực rỡ.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">🖨️</span>
+      <h3>In Ảnh Ngay Lập Tức</h3>
+      <p>Nhận ảnh in chất lượng cao ngay trong vài giây. Mang về kỷ niệm thật sự trong tay bạn.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">🎭</span>
+      <h3>Props & Khung Ảnh</h3>
+      <p>Hàng trăm props đáng yêu, đa dạng phong cách để bạn thoải mái sáng tạo và thể hiện cá tính.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">💾</span>
+      <h3>Lưu Ảnh Kỹ Thuật Số</h3>
+      <p>Toàn bộ ảnh chụp được gửi về điện thoại qua QR code để bạn chia sẻ lên mạng xã hội ngay.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">🎁</span>
+      <h3>Ưu Đãi Sinh Nhật</h3>
+      <p>Khách sinh nhật được giảm giá đặc biệt và nhận thêm quà tặng bất ngờ từ Click & Fun.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PACKAGES -->
+<section id="packages">
+  <div class="pkg-header">
+    <span class="section-label">Bảng Giá</span>
+    <h2 class="section-title">Chọn gói <em>phù hợp</em> với bạn</h2>
+    <p class="section-desc" style="margin: 0 auto">Tất cả các gói đều bao gồm ảnh kỹ thuật số miễn phí và không giới hạn số lần chụp thử.</p>
+  </div>
+  <div class="pkg-grid">
+
+    <div class="pkg-card">
+      <p class="pkg-name">Mini</p>
+      <p class="pkg-price">50K <span>/ lần</span></p>
+      <ul>
+        <li>4 tấm ảnh in 2×6</li>
+        <li>Ảnh kỹ thuật số</li>
+        <li>1 khung chủ đề</li>
+        <li>Props tự chọn</li>
+      </ul>
+      <a href="#contact" class="pkg-btn">Đặt Ngay</a>
+    </div>
+
+    <div class="pkg-card popular">
+      <div class="pkg-badge">⭐ Phổ Biến</div>
+      <p class="pkg-name">Standard</p>
+      <p class="pkg-price">90K <span>/ lần</span></p>
+      <ul>
+        <li>8 tấm ảnh in 2×6</li>
+        <li>Ảnh kỹ thuật số Full HD</li>
+        <li>3 khung chủ đề</li>
+        <li>Props không giới hạn</li>
+        <li>Sticker trang trí</li>
+      </ul>
+      <a href="#contact" class="pkg-btn">Đặt Ngay</a>
+    </div>
+
+    <div class="pkg-card">
+      <p class="pkg-name">Party</p>
+      <p class="pkg-price">200K <span>/ nhóm</span></p>
+      <ul>
+        <li>Không giới hạn lượt chụp</li>
+        <li>20 tấm ảnh in</li>
+        <li>Tất cả khung chủ đề</li>
+        <li>Props VIP đặc biệt</li>
+        <li>Bánh sinh nhật mini</li>
+      </ul>
+      <a href="#contact" class="pkg-btn">Đặt Ngay</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <span class="section-label">Gallery</span>
+  <h2 class="section-title">Khoảnh khắc <em>đáng yêu</em></h2>
+  <p class="section-desc">Xem những bức ảnh được chụp tại Click & Fun — nơi kỷ niệm trở nên lung linh!</p>
+  <div class="gallery-grid">
+    <div class="g-item">
+      <div class="g-placeholder"><span class="g-icon">📸</span><p>Ảnh chụp cặp đôi</p></div>
+      <div class="g-overlay">♥</div>
+    </div>
+    <div class="g-item">
+      <div class="g-placeholder"><span class="g-icon">🎀</span><p>Theme Hoa Đào</p></div>
+      <div class="g-overlay">♥</div>
+    </div>
+    <div class="g-item">
+      <div class="g-placeholder"><span class="g-icon">🌸</span><p>Bộ ảnh vintage</p></div>
+      <div class="g-overlay">♥</div>
+    </div>
+    <div class="g-item">
+      <div class="g-placeholder"><span class="g-icon">✨</span><p>Ảnh nhóm bạn thân</p></div>
+      <div class="g-overlay">♥</div>
+    </div>
+    <div class="g-item">
+      <div class="g-placeholder"><span class="g-icon">🎉</span><p>Theme tiệc sinh nhật</p></div>
+      <div class="g-overlay">♥</div>
+    </div>
+    <div class="g-item">
+      <div class="g-placeholder"><span class="g-icon">💕</span><p>Valentine special</p></div>
+      <div class="g-overlay">♥</div>
+    </div>
+  </div>
+  <p style="text-align:center; margin-top:32px; font-size:.9rem; color:var(--brown); opacity:.6">
+    💡 Thay thế các ô trên bằng ảnh thực của quán để gallery trở nên sinh động hơn!
+  </p>
+</section>
+
+<!-- STEPS -->
+<section id="steps">
+  <div style="text-align:center">
+    <span class="section-label">Quy Trình</span>
+    <h2 class="section-title">Chụp ảnh dễ dàng<br>chỉ <em>4 bước</em></h2>
+  </div>
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Đặt Lịch</h3>
+      <p>Nhắn tin qua Zalo hoặc Facebook để đặt khung giờ yêu thích của bạn.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Chọn Theme</h3>
+      <p>Lựa chọn khung ảnh, props và chủ đề phù hợp với phong cách của bạn.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Chụp Ảnh</h3>
+      <p>Thoải mái tạo dáng và chụp bao nhiêu ảnh tùy thích trong thời gian của gói.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>Nhận Ảnh</h3>
+      <p>Nhận ảnh in ngay tại quán và ảnh kỹ thuật số về điện thoại qua QR code.</p>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <span class="section-label">Khách Hàng Nói Gì</span>
+  <h2 class="section-title">Cảm nhận <em>thực tế</em></h2>
+  <div class="review-grid">
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <p class="review-text">"Quán cực kỳ xinh xắn và dễ thương! Chụp ảnh xong ưng ý lắm, ảnh ra rất đẹp. Chắc chắn sẽ quay lại lần nữa với nhóm bạn thân!"</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">🌸</div>
+        <div>
+          <p class="reviewer-name">Ngọc Anh</p>
+          <p class="reviewer-role">Khách thân thiết</p>
+        </div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <p class="review-text">"Tổ chức sinh nhật ở đây thật tuyệt vời! Không gian decor rất đẹp, nhân viên nhiệt tình. Ảnh in ra sắc nét và màu sắc rất đẹp!"</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">🎂</div>
+        <div>
+          <p class="reviewer-name">Minh Khôi</p>
+          <p class="reviewer-role">Khách sinh nhật</p>
+        </div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="stars">★★★★★</div>
+      <p class="review-text">"Mình và bạn trai đến đây chụp couple photos. Props đa dạng, nhân viên hỗ trợ tận tình, ảnh ra rất lung linh và lãng mạn. Highly recommend!"</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">💑</div>
+        <div>
+          <p class="reviewer-name">Hà Linh</p>
+          <p class="reviewer-role">Cặp đôi</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <span class="section-label" style="background:rgba(255,255,255,.2);color:#fff;border-radius:50px;padding:5px 18px">Liên Hệ</span>
+    <h2 class="section-title" style="margin-top:12px">Sẵn sàng chụp ảnh<br>cùng chúng tôi?</h2>
+    <p class="section-desc">Đặt lịch ngay hôm nay để không bỏ lỡ khung giờ yêu thích của bạn. Chúng tôi luôn sẵn sàng tạo nên những kỷ niệm đẹp cùng bạn! 💕</p>
+    <div class="contact-row">
+      <a href="https://zalo.me/" class="contact-chip">💬 Zalo</a>
+      <a href="https://facebook.com/" class="contact-chip">📘 Facebook</a>
+      <a href="https://instagram.com/" class="contact-chip">📷 Instagram</a>
+      <a href="tel:0901234567" class="contact-chip">📞 Gọi Ngay</a>
+    </div>
+    <p style="margin-top:32px; color:rgba(255,255,255,.7); font-size:.9rem">
+      📍 Địa chỉ: [Thêm địa chỉ quán của bạn vào đây]<br>
+      🕐 Giờ mở cửa: 9:00 – 21:00 hàng ngày
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Click & Fun</span>
+  <p>Lưu Giữ Kỷ Niệm – Mỗi khoảnh khắc đều xứng đáng được ghi nhớ 💕</p>
+  <p style="margin-top:10px; font-size:.8rem; opacity:.5">© 2025 Click & Fun Photobooth. Made with ♥</p>
+</footer>
+
+<script>
+  // floating hearts
+  const container = document.getElementById('hearts');
+  for (let i = 0; i < 18; i++) {
+    const h = document.createElement('div');
+    h.className = 'h';
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.animationDuration = (8 + Math.random() * 12) + 's';
+    h.style.animationDelay = (Math.random() * 15) + 's';
+    h.style.fontSize = (0.8 + Math.random() * 1.4) + 'rem';
+    container.appendChild(h);
+  }
+
+  // scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.why-card, .pkg-card, .review-card, .step, .g-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(28px)';
+    el.style.transition = 'opacity .6s ease, transform .6s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
